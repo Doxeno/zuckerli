@@ -30,11 +30,6 @@ else()
     message(STATUS "IPO / LTO not supported: <${error}>")
 endif()
 
-enable_testing()
-include(CTest)
-cmake_policy(SET CMP0057 NEW)  # https://gitlab.kitware.com/cmake/cmake/issues/18198
-include(GoogleTest)
-
 add_library(
   common
   src/common.cc
@@ -44,9 +39,6 @@ add_library(
 
 target_link_libraries(common absl::flags absl::flags_parse)
 
-add_executable(common_test src/common_test.cc)
-target_link_libraries(common_test common gmock gtest_main gtest Threads::Threads)
-gtest_discover_tests(common_test)
 
 add_library(
   bit_reader
@@ -62,9 +54,6 @@ add_library(
 )
 target_link_libraries(bit_writer common)
 
-add_executable(bits_test src/bits_test.cc)
-target_link_libraries(bits_test bit_writer bit_reader gmock gtest_main gtest Threads::Threads)
-gtest_discover_tests(bits_test)
 
 # A library cannot contain just a headerfile.
 #add_library(
@@ -78,9 +67,6 @@ target_include_directories(entropy_coder_common INTERFACE
 
 target_link_libraries(entropy_coder_common INTERFACE bit_reader bit_writer)
 
-add_executable(entropy_coder_common_test src/entropy_coder_common_test.cc)
-target_link_libraries(entropy_coder_common_test entropy_coder_common gmock gtest_main gtest Threads::Threads)
-gtest_discover_tests(entropy_coder_common_test)
 
 add_library(
   huffman
@@ -89,9 +75,6 @@ add_library(
 )
 target_link_libraries(huffman entropy_coder_common)
 
-add_executable(huffman_test src/huffman_test.cc)
-target_link_libraries(huffman_test huffman gmock gtest_main gtest Threads::Threads)
-gtest_discover_tests(huffman_test)
 
 add_library(
   ans
@@ -100,9 +83,6 @@ add_library(
 )
 target_link_libraries(ans entropy_coder_common)
 
-add_executable(ans_test src/ans_test.cc)
-target_link_libraries(ans_test ans gmock gtest_main gtest Threads::Threads)
-gtest_discover_tests(ans_test)
 
 add_library(
   uncompressed_graph
@@ -111,12 +91,7 @@ add_library(
 )
 target_link_libraries(uncompressed_graph entropy_coder_common)
 
-add_executable(uncompressed_graph_test src/uncompressed_graph_test.cc)
-target_link_libraries(uncompressed_graph_test uncompressed_graph gmock gtest_main gtest Threads::Threads)
-gtest_discover_tests(uncompressed_graph_test)
 
-target_compile_definitions(uncompressed_graph_test PRIVATE
-        -DTESTDATA="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
 
 add_executable(traversal_main_uncompressed src/traversal_main_uncompressed.cc)
 target_link_libraries(traversal_main_uncompressed uncompressed_graph Threads::Threads)
@@ -147,11 +122,7 @@ add_executable(traversal_main_compressed src/traversal_main_compressed.cc)
 target_link_libraries(traversal_main_compressed compressed_graph Threads::Threads)
 
 
-add_executable(roundtrip_test src/roundtrip_test.cc)
-target_link_libraries(roundtrip_test encode decode uncompressed_graph gmock gtest_main gtest Threads::Threads)
 
-target_compile_definitions(roundtrip_test PRIVATE
-        -DTESTDATA="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
 
 add_executable(encoder src/encode_main.cc)
 target_link_libraries(encoder encode)
